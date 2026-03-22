@@ -7,7 +7,10 @@ export interface StockRecord {
   exchange: "HOSE" | "HNX" | "UPCOM" | "";
   date: string; // DD/MM/YYYY
   openPrice: number; // VND
+  highPrice: number; // VND
+  lowPrice: number; // VND
   closePrice: number; // VND
+  volume: number;
   source: StockSource;
 }
 

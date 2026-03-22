@@ -39,17 +39,18 @@ export default function InputForm({ onSubmit }: InputFormProps) {
   return (
     <div className="flex flex-col items-center w-full">
       <main className="w-full max-w-[640px] px-6" style={{ marginTop: "20vh" }}>
-        <header className="mb-12">
+        <header className="mb-12 form-enter-header">
           <h1 className="text-[48px] font-normal leading-tight tracking-tight text-slate-900 dark:text-slate-100 mb-2 font-display">
             {VI.title}
           </h1>
+          <div className="w-16 h-[1px] bg-primary mt-3 mb-4"></div>
           <p className="text-slate-600 dark:text-slate-400 text-base font-normal">
             {VI.subtitle}
           </p>
         </header>
 
         <form className="flex flex-col gap-8 w-full" onSubmit={handleSubmit}>
-          <div className="flex flex-col">
+          <div className="flex flex-col form-enter-field" style={{ animationDelay: "0.1s" }}>
             <label
               className="text-xs font-medium tracking-widest uppercase text-slate-800 dark:text-slate-300 mb-2 font-sans-tabular"
               htmlFor="symbols"
@@ -67,7 +68,7 @@ export default function InputForm({ onSubmit }: InputFormProps) {
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-8 w-full">
+          <div className="flex flex-col sm:flex-row gap-8 w-full form-enter-field" style={{ animationDelay: "0.2s" }}>
             <div className="flex flex-col flex-1">
               <label
                 className="text-xs font-medium tracking-widest uppercase text-slate-800 dark:text-slate-300 mb-2 font-sans-tabular"
@@ -104,7 +105,7 @@ export default function InputForm({ onSubmit }: InputFormProps) {
             </div>
           </div>
 
-          <div className="flex flex-col">
+          <div className="flex flex-col form-enter-field" style={{ animationDelay: "0.3s" }}>
             <label
               className="text-xs font-medium tracking-widest uppercase text-slate-800 dark:text-slate-300 mb-2 font-sans-tabular"
             >
@@ -159,7 +160,7 @@ export default function InputForm({ onSubmit }: InputFormProps) {
             </div>
           </div>
 
-          <div className="mt-4 w-full">
+          <div className="mt-4 w-full form-enter-field" style={{ animationDelay: "0.4s" }}>
             <button
               className="w-full h-[48px] bg-primary hover:bg-primary/90 text-white text-[13px] font-medium tracking-widest uppercase transition-colors duration-200 font-sans-tabular rounded"
               type="submit"

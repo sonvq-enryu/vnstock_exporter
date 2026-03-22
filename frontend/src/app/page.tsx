@@ -39,6 +39,10 @@ export default function Home() {
     setView("REPORT");
   };
 
+  const handleLoadingCancel = () => {
+    setView("INPUT");
+  };
+
   return (
     <>
       {view === "INPUT" && <InputForm onSubmit={handleInputSubmit} />}
@@ -49,6 +53,7 @@ export default function Home() {
           endDate={endDate}
           source={source}
           onComplete={handleLoadingComplete}
+          onCancel={handleLoadingCancel}
         />
       )}
       {view === "REPORT" && (

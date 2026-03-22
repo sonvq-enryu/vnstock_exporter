@@ -100,34 +100,39 @@ export async function POST(request: NextRequest) {
     const allRecords: StockRecord[] = [];
     const allErrors: StockError[] = [];
 
-    const tasks: Promise<{ records: StockRecord[]; error?: StockError }>[] = [];
+    const isBoth = source === "both";
 
+    // Process symbols sequentially to avoid rate-limiting on shared endpoints (e.g. dchart).
+    // Sources for each symbol still run in parallel.
     for (const symbol of symbols) {
-      if (source === "vndirect" || source === "both") {
-        tasks.push(fetchVndirect(symbol, startDate, endDate));
-      }
-      if (source === "ssi" || source === "both") {
-        tasks.push(fetchSsi(symbol, startDate, endDate));
-      }
-      if (source === "dnse" || source === "both") {
-        tasks.push(fetchDnse(symbol, startDate, endDate));
-      }
-    }
+      const symbolTasks: Promise<{ records: StockRecord[]; error?: StockError }>[] = [];
 
-    const results = await Promise.allSettled(tasks);
+      if (source === "vndirect" || isBoth) {
+        symbolTasks.push(fetchVndirect(symbol, startDate, endDate));
+      }
+      if (source === "ssi" || isBoth) {
+        // When "both" is selected, skip dchart fallback — VNDirect already covers it
+        symbolTasks.push(fetchSsi(symbol, startDate, endDate, !isBoth));
+      }
+      if (source === "dnse" || isBoth) {
+        symbolTasks.push(fetchDnse(symbol, startDate, endDate, !isBoth));
+      }
 
-    for (const result of results) {
-      if (result.status === "fulfilled") {
-        allRecords.push(...result.value.records);
-        if (result.value.error) {
-          allErrors.push(result.value.error);
+      const results = await Promise.allSettled(symbolTasks);
+
+      for (const result of results) {
+        if (result.status === "fulfilled") {
+          allRecords.push(...result.value.records);
+          if (result.value.error) {
+            allErrors.push(result.value.error);
+          }
+        } else {
+          allErrors.push({
+            symbol,
+            source: inferErrorSource(source),
+            message: result.reason?.message || "Lỗi không xác định",
+          });
         }
-      } else {
-        allErrors.push({
-          symbol: "",
-          source: inferErrorSource(source),
-          message: result.reason?.message || "Lỗi không xác định",
-        });
       }
     }
 

@@ -16,7 +16,10 @@ function generateCSV(data: StockRecord[]): string {
     VI.tableExchange,
     VI.tableDate,
     VI.tableOpenPrice,
+    VI.tableHighPrice,
+    VI.tableLowPrice,
     VI.tableClosePrice,
+    VI.tableVolume,
     VI.tableSource,
   ];
   const rows = data.map((r) =>
@@ -26,7 +29,10 @@ function generateCSV(data: StockRecord[]): string {
       r.exchange,
       r.date,
       r.openPrice,
+      r.highPrice,
+      r.lowPrice,
       r.closePrice,
+      r.volume,
       r.source,
     ].join(",")
   );
@@ -94,7 +100,7 @@ export default function ExtractModal({ data, onClose }: ExtractModalProps) {
             {VI.extractTitle}
           </h2>
           <p className="text-sm mt-2 text-primary/70 dark:text-slate-400">
-            {VI.extractDesc}
+            {VI.extractDesc(data.length)}
           </p>
         </div>
 
