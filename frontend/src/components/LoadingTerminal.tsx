@@ -2,13 +2,14 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { VI } from "@/lib/vi";
-import type { StockRecord, StockError, RequestSource } from "@/lib/types";
+import type { StockRecord, StockError, RequestSource, RequestMode } from "@/lib/types";
 
 interface LoadingTerminalProps {
   symbols: string[];
   startDate: string;
   endDate: string;
   source: RequestSource;
+  mode: RequestMode;
   onComplete: (data: StockRecord[], errors: StockError[]) => void;
   onCancel: () => void;
 }
@@ -36,6 +37,7 @@ export default function LoadingTerminal({
   startDate,
   endDate,
   source,
+  mode,
   onComplete,
   onCancel,
 }: LoadingTerminalProps) {
@@ -87,7 +89,7 @@ export default function LoadingTerminal({
         const res = await fetch("/api/stock", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ symbols, startDate, endDate, source }),
+          body: JSON.stringify({ symbols, startDate, endDate, source, mode }),
           signal: controller.signal,
         });
 
@@ -129,7 +131,7 @@ export default function LoadingTerminal({
     return () => {
       controller.abort();
     };
-  }, [symbols, startDate, endDate, source, addLog]);
+  }, [symbols, startDate, endDate, source, mode, addLog]);
 
   const handleAbort = () => {
     abortRef.current?.abort();

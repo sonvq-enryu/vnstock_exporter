@@ -1,19 +1,22 @@
 "use client";
 
-import React, { FormEvent } from "react";
+import React, { FormEvent, useState } from "react";
 import { VI } from "@/lib/vi";
-import type { RequestSource } from "@/lib/types";
+import type { RequestSource, RequestMode } from "@/lib/types";
 
 interface InputFormProps {
   onSubmit: (
     symbols: string[],
     startDate: string,
     endDate: string,
-    source: RequestSource
+    source: RequestSource,
+    mode: RequestMode
   ) => void;
 }
 
 export default function InputForm({ onSubmit }: InputFormProps) {
+  const [mode, setMode] = useState<RequestMode>("dateRange");
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -21,6 +24,7 @@ export default function InputForm({ onSubmit }: InputFormProps) {
     const startDate = formData.get("start-date") as string;
     const endDate = formData.get("end-date") as string;
     const source = formData.get("source") as RequestSource;
+    const selectedMode = formData.get("mode") as RequestMode;
 
     const symbols = symbolsRaw
       .split(",")
@@ -33,8 +37,14 @@ export default function InputForm({ onSubmit }: InputFormProps) {
       return;
     }
 
-    onSubmit(symbols, startDate, endDate, source);
+    onSubmit(symbols, startDate, endDate, source, selectedMode);
   };
+
+  const isMonthRange = mode === "monthRange";
+  const datePattern = isMonthRange ? "\\d{2}/\\d{4}" : "\\d{2}/\\d{2}/\\d{4}";
+  const datePlaceholder = isMonthRange ? VI.monthPlaceholder : VI.datePlaceholder;
+  const startLabel = isMonthRange ? VI.startMonthLabel : VI.startDateLabel;
+  const endLabel = isMonthRange ? VI.endMonthLabel : VI.endDateLabel;
 
   return (
     <div className="flex flex-col items-center w-full">
@@ -72,16 +82,54 @@ export default function InputForm({ onSubmit }: InputFormProps) {
             <div className="flex flex-col flex-1">
               <label
                 className="text-xs font-medium tracking-widest uppercase text-slate-800 dark:text-slate-300 mb-2 font-sans-tabular"
+              >
+                {VI.modeLabel}
+              </label>
+              <div className="flex gap-6">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="dateRange"
+                    checked={mode === "dateRange"}
+                    onChange={() => setMode("dateRange")}
+                    className="h-4 w-4 text-primary focus:ring-primary cursor-pointer"
+                  />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">
+                    {VI.modeDateRange}
+                  </span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="monthRange"
+                    checked={mode === "monthRange"}
+                    onChange={() => setMode("monthRange")}
+                    className="h-4 w-4 text-primary focus:ring-primary cursor-pointer"
+                  />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">
+                    {VI.modeMonthRange}
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-8 w-full form-enter-field" style={{ animationDelay: "0.25s" }}>
+            <div className="flex flex-col flex-1">
+              <label
+                className="text-xs font-medium tracking-widest uppercase text-slate-800 dark:text-slate-300 mb-2 font-sans-tabular"
                 htmlFor="start-date"
               >
-                {VI.startDateLabel}
+                {startLabel}
               </label>
               <input
                 className="editorial-input w-full text-lg placeholder:text-slate-400 dark:placeholder:text-slate-500 font-mono"
                 id="start-date"
                 name="start-date"
-                pattern="\d{2}/\d{2}/\d{4}"
-                placeholder={VI.datePlaceholder}
+                pattern={datePattern}
+                placeholder={datePlaceholder}
                 required
                 type="text"
               />
@@ -91,14 +139,14 @@ export default function InputForm({ onSubmit }: InputFormProps) {
                 className="text-xs font-medium tracking-widest uppercase text-slate-800 dark:text-slate-300 mb-2 font-sans-tabular"
                 htmlFor="end-date"
               >
-                {VI.endDateLabel}
+                {endLabel}
               </label>
               <input
                 className="editorial-input w-full text-lg placeholder:text-slate-400 dark:placeholder:text-slate-500 font-mono"
                 id="end-date"
                 name="end-date"
-                pattern="\d{2}/\d{2}/\d{4}"
-                placeholder={VI.datePlaceholder}
+                pattern={datePattern}
+                placeholder={datePlaceholder}
                 required
                 type="text"
               />
@@ -133,17 +181,6 @@ export default function InputForm({ onSubmit }: InputFormProps) {
                 />
                 <span className="text-sm text-slate-700 dark:text-slate-300">
                   {VI.sourceVndirect}
-                </span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="source"
-                  value="ssi"
-                  className="h-4 w-4 text-primary focus:ring-primary cursor-pointer"
-                />
-                <span className="text-sm text-slate-700 dark:text-slate-300">
-                  {VI.sourceSsi}
                 </span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">

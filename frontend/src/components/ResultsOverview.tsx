@@ -90,26 +90,22 @@ export default function ResultsOverview({ data }: ResultsOverviewProps) {
     };
   }, [data]);
 
-  // Group close prices by date (average if multiple symbols)
+  // Plot canonical records directly (no date-level averaging).
   const chartData = useMemo(() => {
-    const byDate = new Map<string, number[]>();
-    for (const r of data) {
-      if (!byDate.has(r.date)) byDate.set(r.date, []);
-      byDate.get(r.date)!.push(r.closePrice);
-    }
-    return Array.from(byDate.entries())
-      .map(([date, prices]) => ({
-        date,
-        value: prices.reduce((a, b) => a + b, 0) / prices.length,
+    return [...data]
+      .map((r) => ({
+        date: r.date,
+        value: r.closePrice,
+        symbol: r.symbol,
       }))
       .sort((a, b) => {
-        // parse DD/MM/YYYY for comparison
         const pa = a.date.split("/");
         const pb = b.date.split("/");
-        return (
+        const timeDiff =
           new Date(+pa[2], +pa[1] - 1, +pa[0]).getTime() -
-          new Date(+pb[2], +pb[1] - 1, +pb[0]).getTime()
-        );
+          new Date(+pb[2], +pb[1] - 1, +pb[0]).getTime();
+        if (timeDiff !== 0) return timeDiff;
+        return a.symbol.localeCompare(b.symbol);
       });
   }, [data]);
 
