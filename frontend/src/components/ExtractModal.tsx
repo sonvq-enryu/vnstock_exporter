@@ -1,12 +1,27 @@
 "use client";
 
 import React, { useState } from "react";
+import * as XLSX from "xlsx";
 import { VI } from "@/lib/vi";
 import type { StockRecord } from "@/lib/types";
 
 interface ExtractModalProps {
   data: StockRecord[];
   onClose: () => void;
+}
+
+function parseDateVN(date: string): number {
+  const parts = date.split("/");
+  if (parts.length !== 3) return 0;
+  return new Date(+parts[2], +parts[1] - 1, +parts[0]).getTime();
+}
+
+function getSortedExportData(data: StockRecord[]): StockRecord[] {
+  return [...data].sort((a, b) => {
+    const dateDiff = parseDateVN(a.date) - parseDateVN(b.date);
+    if (dateDiff !== 0) return dateDiff;
+    return a.symbol.localeCompare(b.symbol);
+  });
 }
 
 function generateCSV(data: StockRecord[]): string {
@@ -16,7 +31,10 @@ function generateCSV(data: StockRecord[]): string {
     VI.tableExchange,
     VI.tableDate,
     VI.tableOpenPrice,
+    VI.tableHighPrice,
+    VI.tableLowPrice,
     VI.tableClosePrice,
+    VI.tableVolume,
     VI.tableSource,
   ];
   const rows = data.map((r) =>
@@ -26,7 +44,10 @@ function generateCSV(data: StockRecord[]): string {
       r.exchange,
       r.date,
       r.openPrice,
+      r.highPrice,
+      r.lowPrice,
       r.closePrice,
+      r.volume,
       r.source,
     ].join(",")
   );
@@ -37,7 +58,37 @@ function generateJSON(data: StockRecord[]): string {
   return JSON.stringify(data, null, 2);
 }
 
+function generateXLSX(data: StockRecord[]): ArrayBuffer {
+  const rows = data.map((r) => ({
+    [VI.tableSymbol]: r.symbol,
+    [VI.tableCompanyName]: r.companyName,
+    [VI.tableExchange]: r.exchange,
+    [VI.tableDate]: r.date,
+    [VI.tableOpenPrice]: r.openPrice,
+    [VI.tableHighPrice]: r.highPrice,
+    [VI.tableLowPrice]: r.lowPrice,
+    [VI.tableClosePrice]: r.closePrice,
+    [VI.tableVolume]: r.volume,
+    [VI.tableSource]: r.source,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "StockData");
+  return XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+}
+
 function downloadFile(content: string, filename: string, mimeType: string) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function downloadBinaryFile(content: ArrayBuffer, filename: string, mimeType: string) {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -51,17 +102,22 @@ export default function ExtractModal({ data, onClose }: ExtractModalProps) {
   const [selectedFormat, setSelectedFormat] = useState("csv");
 
   const handleDownload = () => {
+    const sortedData = getSortedExportData(data);
+
     if (selectedFormat === "csv") {
-      downloadFile(generateCSV(data), "chung_khoan.csv", "text/csv");
+      downloadFile(generateCSV(sortedData), "chung_khoan.csv", "text/csv");
     } else if (selectedFormat === "json") {
       downloadFile(
-        generateJSON(data),
+        generateJSON(sortedData),
         "chung_khoan.json",
         "application/json"
       );
     } else {
-      alert("Xu\u1EA5t XLSX ch\u01B0a \u0111\u01B0\u1EE3c h\u1ED7 tr\u1EE3. Vui l\u00F2ng ch\u1ECDn CSV ho\u1EB7c JSON.");
-      return;
+      downloadBinaryFile(
+        generateXLSX(sortedData),
+        "chung_khoan.xlsx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
     }
     onClose();
   };
@@ -94,7 +150,7 @@ export default function ExtractModal({ data, onClose }: ExtractModalProps) {
             {VI.extractTitle}
           </h2>
           <p className="text-sm mt-2 text-primary/70 dark:text-slate-400">
-            {VI.extractDesc}
+            {VI.extractDesc(data.length)}
           </p>
         </div>
 

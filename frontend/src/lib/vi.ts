@@ -6,14 +6,19 @@ export const VI = {
   // Form
   symbolLabel: "Mã chứng khoán",
   symbolPlaceholder: "VD: VNM, FPT, HPG",
+  modeLabel: "Chế độ truy xuất",
+  modeDateRange: "Theo ngày",
+  modeMonthRange: "Theo tháng",
   startDateLabel: "Ngày bắt đầu",
   endDateLabel: "Ngày kết thúc",
   datePlaceholder: "DD/MM/YYYY",
+  startMonthLabel: "Tháng bắt đầu",
+  endMonthLabel: "Tháng kết thúc",
+  monthPlaceholder: "MM/YYYY",
   sourceLabel: "Nguồn dữ liệu",
   sourceVndirect: "VNDirect",
-  sourceSsi: "SSI",
   sourceDnse: "DNSE",
-  sourceBoth: "Cả ba",
+  sourceBoth: "Cả hai",
   submitButton: "Tạo Báo Cáo",
 
   // Loading
@@ -33,16 +38,30 @@ export const VI = {
   tableExchange: "Sàn",
   tableDate: "Ngày",
   tableOpenPrice: "Giá mở cửa",
+  tableHighPrice: "Giá cao",
+  tableLowPrice: "Giá thấp",
   tableClosePrice: "Giá đóng cửa",
+  tableVolume: "Khối lượng",
   tableSource: "Nguồn",
   periodHigh: "Giá cao nhất",
   periodLow: "Giá thấp nhất",
-  recordCount: "Số bản ghi",
+  recordCount: "Số bản ghi hợp nhất",
+  avgOpen: "Giá mở TB",
+  avgClose: "Giá đóng TB",
+  avgVolume: "KL giao dịch TB",
   extract: "Xuất dữ liệu",
+
+  // Tabs
+  tabOverview: "Tổng quan",
+  tabDataGrid: "Bảng dữ liệu",
+
+  // Pagination
+  paginationShowing: (from: number, to: number, total: number) =>
+    `Hiển thị ${from}–${to} / ${total} bản ghi`,
 
   // Extract Modal
   extractTitle: "Xuất Dữ Liệu",
-  extractDesc: "Chọn định dạng tệp để xuất dữ liệu.",
+  extractDesc: (n: number) => `Xuất ${n} bản ghi`,
   downloadButton: "Tải Xuống",
 
   // Errors

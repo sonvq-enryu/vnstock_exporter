@@ -11,6 +11,7 @@ import {
 
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
+const REQUEST_TIMEOUT_MS = 8000;
 
 const REQUEST_HEADERS = {
   Accept: "application/json, text/plain, */*",
@@ -23,13 +24,19 @@ interface VndirectRecord {
   code?: string;
   date?: string;
   adOpen?: number;
+  adHigh?: number;
+  adLow?: number;
   adClose?: number;
+  nmVolume?: number;
   floor?: string;
   organName?: string;
   companyName?: string;
   exchange?: string;
   open?: number;
+  high?: number;
+  low?: number;
   close?: number;
+  volume?: number;
 }
 
 interface VndirectResponse {
@@ -39,7 +46,10 @@ interface VndirectResponse {
 interface VndirectDchartResponse {
   t?: number[];
   o?: number[];
+  h?: number[];
+  l?: number[];
   c?: number[];
+  v?: number[];
   s?: string;
   nextTime?: number;
 }
@@ -50,32 +60,40 @@ function toRecords(
 ): StockRecord[] {
   const ts = payload.t || [];
   const opens = payload.o || [];
+  const highs = payload.h || [];
+  const lows = payload.l || [];
   const closes = payload.c || [];
+  const volumes = payload.v || [];
   const size = Math.min(ts.length, opens.length, closes.length);
 
   const records: StockRecord[] = [];
   for (let i = 0; i < size; i += 1) {
+    const open = normalizePriceVnd(opens[i]);
+    const close = normalizePriceVnd(closes[i]);
     records.push({
       symbol: symbol.toUpperCase(),
       companyName: "",
       exchange: "",
       date: formatDateFromUnix(ts[i]),
-      openPrice: normalizePriceVnd(opens[i]),
-      closePrice: normalizePriceVnd(closes[i]),
+      openPrice: open,
+      highPrice: highs[i] !== undefined ? normalizePriceVnd(highs[i]) : Math.max(open, close),
+      lowPrice: lows[i] !== undefined ? normalizePriceVnd(lows[i]) : Math.min(open, close),
+      closePrice: close,
+      volume: volumes[i] || 0,
       source: "vndirect",
     });
   }
   return records;
 }
 
-async function fetchJsonWithRetry(url: string, retries = 2): Promise<VndirectDchartResponse> {
+async function fetchJsonWithRetry(url: string, retries = 0): Promise<VndirectDchartResponse> {
   let lastError: unknown;
   for (let i = 0; i <= retries; i += 1) {
     try {
       const res = await fetch(url, {
         headers: REQUEST_HEADERS,
         cache: "no-store",
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
@@ -84,7 +102,7 @@ async function fetchJsonWithRetry(url: string, retries = 2): Promise<VndirectDch
     } catch (err) {
       lastError = err;
       if (i < retries) {
-        await new Promise((r) => setTimeout(r, 400 * (i + 1)));
+        await new Promise((r) => setTimeout(r, 250 * (i + 1)));
       }
     }
   }
@@ -128,22 +146,16 @@ export async function fetchVndirect(
   endDate: string
 ): Promise<{ records: StockRecord[]; error?: StockError }> {
   try {
-    try {
-      const dchartRecords = await fetchFromDchart(symbol, startDate, endDate);
-      if (dchartRecords.length > 0) {
-        return { records: dchartRecords };
-      }
-    } catch {
-      // fallback below
-    }
+    const [dchartResult, entradeResult] = await Promise.allSettled([
+      fetchFromDchart(symbol, startDate, endDate),
+      fetchFromEntrade(symbol, startDate, endDate),
+    ]);
 
-    try {
-      const entradeRecords = await fetchFromEntrade(symbol, startDate, endDate);
-      if (entradeRecords.length > 0) {
-        return { records: entradeRecords };
-      }
-    } catch {
-      // fallback below
+    if (dchartResult.status === "fulfilled" && dchartResult.value.length > 0) {
+      return { records: dchartResult.value };
+    }
+    if (entradeResult.status === "fulfilled" && entradeResult.value.length > 0) {
+      return { records: entradeResult.value };
     }
 
     // Fallback to previous endpoint in case dchart returns empty.
@@ -160,7 +172,7 @@ export async function fetchVndirect(
       `?q=${encodeURIComponent(query)}&sort=date&size=10000&page=1`;
 
     const res = await fetch(url, {
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
 
     if (!res.ok) {
@@ -200,13 +212,21 @@ export async function fetchVndirect(
       const date = formatDateFromUnknown(item.date);
       if (!date) continue;
 
+      const highRaw = item.adHigh ?? item.high;
+      const lowRaw = item.adLow ?? item.low;
+      const highPrice = highRaw !== undefined ? normalizePriceVnd(highRaw) : Math.max(openPrice, closePrice);
+      const lowPrice = lowRaw !== undefined ? normalizePriceVnd(lowRaw) : Math.min(openPrice, closePrice);
+
       records.push({
         symbol: (item.code || symbol).toUpperCase(),
         companyName: item.organName || item.companyName || "",
         exchange: parseExchange(item.floor || item.exchange),
         date,
         openPrice,
+        highPrice,
+        lowPrice,
         closePrice,
+        volume: item.nmVolume ?? item.volume ?? 0,
         source: "vndirect",
       });
     }

@@ -30,7 +30,9 @@ body {
   }
 }
 
-/* Custom Input Styles from Design Syntax */
+/* ============================================================
+   Editorial Input Styles
+   ============================================================ */
 .editorial-input {
   border: none;
   border-bottom: 1px solid #d0cdc5;
@@ -56,11 +58,36 @@ body {
   }
 }
 
-/* Animations from Design Syntax */
+/* ============================================================
+   Form Entrance Animations (staggered)
+   ============================================================ */
+.form-enter-header {
+  animation: fadeInUp 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+.form-enter-field {
+  animation: fadeInUp 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================
+   Loading / Log Animations
+   ============================================================ */
 .fade-in-up {
   animation: fadeInUp 0.5s ease-out forwards;
   opacity: 0;
-  transform: translateY(10px);
 }
 
 .log-old {
@@ -71,13 +98,6 @@ body {
 .log-older {
   opacity: 0.2;
   transition: opacity 0.5s ease;
-}
-
-@keyframes fadeInUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .progress-expand {
@@ -91,6 +111,246 @@ body {
   }
 }
 
+/* ============================================================
+   Terminal Theme
+   ============================================================ */
+.terminal-bg {
+  background-color: #0a0f14;
+  color: #c9d1d9;
+  font-family: var(--font-ibm-plex-mono), 'Courier New', monospace;
+}
+
+.terminal-statusbar {
+  background-color: #0d1117;
+}
+
+.terminal-text {
+  color: #c9d1d9;
+}
+
+.terminal-text-dim {
+  color: #4a5568;
+}
+
+.terminal-green {
+  color: #10b981;
+}
+
+.terminal-red {
+  color: #ef4444;
+}
+
+.terminal-yellow {
+  color: #f59e0b;
+}
+
+.terminal-progress-bar {
+  background: linear-gradient(90deg, #1173d4 0%, #10b981 100%);
+  box-shadow: 0 0 8px rgba(17, 115, 212, 0.5);
+}
+
+.terminal-log-new {
+  animation: terminalFadeIn 0.25s ease-out forwards;
+}
+
+.terminal-log-old {
+  opacity: 0.5;
+}
+
+@keyframes terminalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ============================================================
+   Tab System
+   ============================================================ */
+.tab-btn {
+  padding: 14px 20px;
+  font-size: 13px;
+  font-family: var(--font-ibm-plex-sans), sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+  background: transparent;
+  color: #888;
+  margin-bottom: -1px;
+}
+
+.tab-btn:hover {
+  color: #1173d4;
+}
+
+.tab-btn-active {
+  color: #1173d4;
+  border-bottom-color: #1173d4;
+}
+
+.tab-btn-inactive {
+  color: #888;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tab-btn {
+    color: #64748b;
+  }
+  .tab-btn:hover {
+    color: #60a5fa;
+  }
+  .tab-btn-active {
+    color: #60a5fa;
+    border-bottom-color: #60a5fa;
+  }
+}
+
+.tab-content {
+  animation: tabFadeIn 0.2s ease-out forwards;
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================
+   Chart Container
+   ============================================================ */
+.overview-chart-container {
+  background: linear-gradient(to bottom, #f8f9fa, #f4f3ef);
+  padding: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .overview-chart-container {
+    background: linear-gradient(to bottom, #0f172a, #101922);
+  }
+}
+
+/* ============================================================
+   Stat Cards
+   ============================================================ */
+.stat-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ============================================================
+   Data Grid Table
+   ============================================================ */
+.datagrid-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.datagrid-table th,
+.datagrid-table td {
+  border-bottom: 1px solid #D0CDC5;
+  padding: 10px 16px;
+}
+
+.datagrid-table th {
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: #444;
+  white-space: nowrap;
+}
+
+.datagrid-table td {
+  font-size: 13px;
+}
+
+.datagrid-table tr:hover td {
+  background-color: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .datagrid-table th {
+    color: #94a3b8;
+    border-bottom-color: #1e293b;
+  }
+  .datagrid-table td {
+    border-bottom-color: #1e293b;
+  }
+  .datagrid-table tr:hover td {
+    background-color: #1e293b;
+  }
+}
+
+/* ============================================================
+   Pagination
+   ============================================================ */
+.pagination-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  font-size: 13px;
+  font-family: var(--font-ibm-plex-mono), monospace;
+  border: 1px solid #d0cdc5;
+  background: transparent;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  border-radius: 3px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #1173d4;
+  color: white;
+  border-color: #1173d4;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pagination-btn-active {
+  background: #1173d4;
+  color: white;
+  border-color: #1173d4;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pagination-btn {
+    border-color: #334155;
+    color: #94a3b8;
+  }
+  .pagination-btn:hover:not(:disabled) {
+    background: #1173d4;
+    color: white;
+    border-color: #1173d4;
+  }
+  .pagination-btn-active {
+    background: #1173d4;
+    color: white;
+    border-color: #1173d4;
+  }
+}
+
+/* ============================================================
+   Global Table Styles (for non-datagrid tables)
+   ============================================================ */
 table {
   border-collapse: collapse;
   width: 100%;
